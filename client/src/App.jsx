@@ -1,14 +1,19 @@
 import React from 'react'
-import {BrowserRouter, Route, Routes}  from "react-router-dom"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Home from './pages/Home'
+import useGetCurrentUser from './hooks/useGetCurrentUser'
+
+export const serverUrl = "http://localhost:8000"
 
 const App = () => {
+  useGetCurrentUser() // ✅ yahan move karo
+
   return (
-<BrowserRouter>
-  <Routes>
-    <Route  path='/' element={<Home/>}/>
-  </Routes>
-</BrowserRouter>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

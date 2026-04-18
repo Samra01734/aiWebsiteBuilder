@@ -1,8 +1,11 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import LoginModel from '../components/LoginModel';
 
 const Home = () => {
   const currentYear = new Date().getFullYear();
+
+  const [openLogin, setOpenLogin] = useState(false);
 
   const highlights = [
     {
@@ -27,10 +30,9 @@ const Home = () => {
     },
   ];
 
-  // Advanced Colored Particles
   const ColoredParticles = () => (
     <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
-      {Array.from({ length: 70 }).map((_, i) => (
+      {Array.from({ length: 60 }).map((_, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full bg-blue-400"
@@ -41,20 +43,16 @@ const Home = () => {
           }}
           initial={{
             x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight * 0.9,
-            opacity: Math.random() * 0.6 + 0.3,
-            scale: Math.random() * 0.7 + 0.5,
+            y: Math.random() * window.innerHeight,
+            opacity: 0.4,
           }}
           animate={{
-            y: [null, -window.innerHeight * 1.3],
-            x: [null, (Math.random() - 0.5) * 320],
-            opacity: [null, 0.08],
-            scale: [null, Math.random() * 0.5 + 0.3],
+            y: [0, -window.innerHeight],
+            opacity: [0.4, 0],
           }}
           transition={{
-            duration: Math.random() * 40 + 38,
+            duration: Math.random() * 30 + 20,
             repeat: Infinity,
-            delay: Math.random() * -50,
             ease: "linear",
           }}
         />
@@ -64,140 +62,114 @@ const Home = () => {
 
   return (
     <div className="relative min-h-screen bg-black text-white overflow-hidden">
-      
-      {/* Background - Pure Black with Box Grid */}
+
+      {/* BACKGROUND GRID */}
       <div className="fixed inset-0 z-[-2]">
-        {/* Visible Box Grid */}
-        <div 
-          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] 
-                     bg-[size:80px_80px]"
-        />
-        
-        {/* Extra subtle overlay for depth */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] bg-[size:80px_80px]" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_2px)] bg-[size:40px_40px]" />
       </div>
 
-      {/* Colored Floating Particles */}
       <ColoredParticles />
 
-      {/* Premium Navbar */}
-      <motion.nav 
+      {/* NAVBAR */}
+      <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-3xl bg-black/80 border-b border-white/10"
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl bg-black/70 border-b border-white/10"
       >
-        <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="text-3xl font-bold tracking-[-2px]">
-            GenWeb<span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">.ai</span>
+        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+
+          {/* LOGO */}
+          <div className="text-3xl font-bold tracking-tight">
+            GenWeb<span className="text-blue-400">.ai</span>
           </div>
 
-          <div className="flex items-center gap-10">
-            <div className="hidden md:block text-sm text-zinc-400 hover:text-white cursor-pointer transition-colors">
+          {/* NAV LINKS */}
+          <div className="flex items-center gap-8">
+
+            <button className="text-sm text-zinc-400 hover:text-white transition">
               Pricing
-            </div>
-            <button className="px-7 py-3 rounded-2xl border border-white/20 hover:border-white/40 text-sm font-medium transition-all hover:bg-white/5">
-              Get <span className="text-blue-400">Started</span>
             </button>
+
+            <button
+              onClick={() => setOpenLogin(true)}
+              className="px-6 py-2 rounded-xl border border-white/20 hover:bg-white/10 transition"
+            >
+              Get Started
+            </button>
+
           </div>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
-      <section className="pt-52 pb-32 px-6 text-center relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <motion.h1 
-            initial={{ opacity: 0, y: 80 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-            className="text-7xl md:text-8xl lg:text-[92px] font-bold leading-none tracking-[-3px] mb-8"
-          >
-            Build Stunning Websites<br />
-            With <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-violet-400 bg-clip-text text-transparent">AI</span>
-          </motion.h1>
+      {/* HERO */}
+      <section className="pt-48 text-center px-6">
 
-          <motion.p 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
-            className="max-w-3xl mx-auto text-2xl text-zinc-400 mb-14 font-light"
-          >
-            Describe your idea once. Get a production-ready, beautiful website in seconds.
-          </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-6xl md:text-7xl font-bold"
+        >
+          Build Stunning Websites with <span className="text-blue-400">AI</span>
+        </motion.h1>
 
-          <motion.button 
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.96 }}
-            className="px-14 py-6 text-xl font-semibold rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-600 
-                       hover:brightness-110 shadow-2xl shadow-purple-500/50 transition-all"
-          >
-            Start Building Free
-          </motion.button>
-        </div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 text-zinc-400"
+        >
+          Describe your idea — AI builds it instantly.
+        </motion.p>
+
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6 }}
+          onClick={() => setOpenLogin(true)}
+          className="mt-10 px-10 py-4 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-2xl font-semibold"
+        >
+          Start Free
+        </motion.button>
+
       </section>
 
-      {/* Highlights Section */}
-      <section className="px-6 pb-32 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2 
+      {/* FEATURES */}
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 px-10 mt-24">
+
+        {highlights.map((item, i) => (
+          <motion.div
+            key={i}
+            whileHover={{ y: -10 }}
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-5xl font-bold text-center mb-20 tracking-tight"
+            transition={{ delay: i * 0.1 }}
+            className="p-6 bg-zinc-900 border border-white/10 rounded-2xl"
           >
-            Why Choose GenWeb.ai
-          </motion.h2>
+            <div className="text-4xl">{item.icon}</div>
+            <h3 className="text-xl mt-3 font-semibold">{item.title}</h3>
+            <p className="text-zinc-400 text-sm mt-2">{item.desc}</p>
+          </motion.div>
+        ))}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {highlights.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 80 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                whileHover={{ y: -14 }}
-                className="group bg-zinc-950 border border-white/10 hover:border-blue-500/40 
-                           rounded-3xl p-10 transition-all duration-500"
-              >
-                <div className="text-6xl mb-8 group-hover:scale-125 transition-transform duration-500">
-                  {item.icon}
-                </div>
-                <h3 className="text-2xl font-semibold mb-4 tracking-tight">
-                  {item.title}
-                </h3>
-                <p className="text-zinc-400 leading-relaxed">
-                  {item.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-black border-t border-white/10 py-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-3xl font-bold tracking-[-1px]">
-              GenWeb<span className="text-violet-400">.ai</span>
-            </div>
-
-            <div className="text-zinc-500 text-sm">
-              © {currentYear} GenWeb.ai. All Rights Reserved.
-            </div>
-
-            <div className="flex gap-8 text-sm text-zinc-400">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
-            </div>
-          </div>
-        </div>
+      {/* FOOTER */}
+      <footer className="text-center py-12 text-zinc-500 mt-20">
+        © {currentYear} GenWeb.ai. All Rights Reserved.
       </footer>
+
+      {/* MODAL */}
+      <AnimatePresence>
+        {openLogin && (
+          <LoginModel
+            open={openLogin}
+            onClose={() => setOpenLogin(false)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

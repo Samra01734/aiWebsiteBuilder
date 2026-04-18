@@ -22,7 +22,7 @@ const userSchema=new mongoose.Schema({
     plan:{
         type:String,
         enum:["free","pro","enterprise"],
-        default:free
+ default: "free"
     }
 },{timestaps:true})
 const User=mongoose.model("User",userSchema)
