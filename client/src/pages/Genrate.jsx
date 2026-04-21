@@ -7,6 +7,9 @@ const Generate = () => {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
 
+  const handleGenerateWebsite=async ()=>{
+    1
+  }
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center">
 
