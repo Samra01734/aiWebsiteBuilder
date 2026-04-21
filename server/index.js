@@ -26,7 +26,7 @@ app.use(cors({
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
-app.use("/api/website", webssiteRouter);
+app.use("/api/website", websiteRouter);
 
 
 // Start Server

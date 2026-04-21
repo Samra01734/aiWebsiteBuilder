@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useSelector } from 'react-redux';
 import Dashboard from './pages/Dashboard';
 import Genrate from './pages/Genrate';
+import Editor from './pages/Editor';
 
 export const serverUrl = "http://localhost:8000";
 
@@ -20,6 +21,7 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/dashboard' element={userData?<Dashboard/>:<Home/>} />
         <Route path='/generate' element={userData?<Genrate/>:<Home/>} />
+        <Route path='/editor/:id' element={userData?<Editor/>:<Home/>} />
 
       </Routes>
 

@@ -2,19 +2,23 @@ const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
 const model = "deepseek/deepseek-chat";
 
 const generateResponse = async (prompt) => {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();   // trim removes accidental spaces
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
 
   if (!apiKey) {
     throw new Error("OPENROUTER_API_KEY is missing in .env file");
   }
 
-  console.log("🔑 Using OpenRouter API Key (first 20 chars):", apiKey.substring(0, 20) + "...");
+  console.log("🔑 KEY:", apiKey.substring(0, 15));
 
   const res = await fetch(openRouterUrl, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+
+      // 🔥 MOST IMPORTANT (tumhare code me missing hai)
+      "HTTP-Referer": "http://localhost:5173",
+      "X-Title": "AI Website Builder",
     },
     body: JSON.stringify({
       model,
@@ -23,17 +27,17 @@ const generateResponse = async (prompt) => {
     }),
   });
 
+  const data = await res.json();
+
+  console.log("🔵 FULL RESPONSE:", data);
+
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    console.error("❌ OpenRouter Error Details:", {
-      status: res.status,
-      error: errorData.error || errorData
-    });
-    throw new Error(`OpenRouter API error: ${res.status} - ${errorData.error?.message || res.statusText}`);
+    throw new Error(
+      `OpenRouter error ${res.status}: ${data?.error?.message || "Unknown"}`
+    );
   }
 
-  const data = await res.json();
-  return data?.choices?.[0]?.message?.content || "No response generated";
+  return data?.choices?.[0]?.message?.content || "No response";
 };
 
 export default generateResponse;
