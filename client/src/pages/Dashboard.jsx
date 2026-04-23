@@ -155,7 +155,7 @@ const Dashboard = () => {
                     {site.description}
                   </p>
 
-                  <button className="mt-4 text-purple-400 text-sm">
+                  <button className="mt-4 text-purple-700 text-sm ">
                     Open →
                   </button>
                 </motion.div>
