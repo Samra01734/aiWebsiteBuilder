@@ -22,14 +22,21 @@ const Dashboard = () => {
   const getInitials = (name = "") =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase();
 
-  // ✅ FETCH WEBSITES FROM BACKEND
+  // ✅ FETCH USER WEBSITES (FIXED API)
   useEffect(() => {
     const fetchWebsites = async () => {
       try {
         setLoading(true);
 
+        const token = localStorage.getItem("token");
+
         const res = await axios.get(
-          `http://localhost:8000/api/websites/${userData?._id}`
+          "http://localhost:8000/api/website",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         setWebsites(res.data || []);
@@ -73,11 +80,12 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold overflow-hidden">
             {userData?.photoURL ? (
               <img
                 src={userData.photoURL}
-                className="w-full h-full object-cover rounded-full"
+                alt="profile"
+                className="w-full h-full object-cover"
               />
             ) : (
               getInitials(userData?.name)
@@ -95,7 +103,7 @@ const Dashboard = () => {
         <div className="flex gap-4 mt-6">
           <button
             onClick={() => navigate("/generate")}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-purple-600"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 transition"
           >
             <Plus size={18} />
             Create New Website
@@ -106,21 +114,21 @@ const Dashboard = () => {
       {/* STATS */}
       <div className="px-6 mt-10 grid grid-cols-3 gap-5">
         <div className="p-5 rounded-2xl border border-purple-500/20">
-          <Rocket className="text-purple-400" />
-          <h3 className="text-2xl">{websites.length}</h3>
-          <p>Projects</p>
+          <Rocket className="text-purple-400 mb-2" />
+          <h3 className="text-2xl font-bold">{websites.length}</h3>
+          <p className="text-sm text-zinc-400">Projects</p>
         </div>
 
         <div className="p-5 rounded-2xl border border-purple-500/20">
-          <Globe className="text-purple-400" />
-          <h3 className="text-2xl">0</h3>
-          <p>Deployed</p>
+          <Globe className="text-purple-400 mb-2" />
+          <h3 className="text-2xl font-bold">0</h3>
+          <p className="text-sm text-zinc-400">Deployed</p>
         </div>
 
         <div className="p-5 rounded-2xl border border-purple-500/20">
-          <Sparkles className="text-purple-400" />
-          <h3 className="text-2xl">{userData?.credits || 0}</h3>
-          <p>AI Credits</p>
+          <Sparkles className="text-purple-400 mb-2" />
+          <h3 className="text-2xl font-bold">{userData?.credits || 0}</h3>
+          <p className="text-sm text-zinc-400">AI Credits</p>
         </div>
       </div>
 
@@ -146,16 +154,20 @@ const Dashboard = () => {
                 <motion.div
                   key={i}
                   whileHover={{ scale: 1.03 }}
-                  className="p-5 rounded-2xl border border-purple-500/20"
+                  className="p-5 rounded-2xl border border-purple-500/20 hover:bg-purple-500/5 transition"
                 >
                   <h3 className="text-lg font-semibold">
-                    {site.title}
+                    {site.prompt}
                   </h3>
-                  <p className="text-zinc-400 text-sm">
-                    {site.description}
+
+                  <p className="text-zinc-400 text-sm mt-2">
+                    {site.code?.slice(0, 80)}...
                   </p>
 
-                  <button className="mt-4 text-purple-700 text-sm ">
+                  <button
+                    onClick={() => navigate(`/editor/${site._id}`)}
+                    className="mt-4 text-purple-400 text-sm hover:underline"
+                  >
                     Open →
                   </button>
                 </motion.div>

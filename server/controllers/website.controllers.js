@@ -1,7 +1,8 @@
 import generateResponse from "../config/openRouter.js";
+import Website from "../models/website.model.js";
 
 /**
- * SAFE JSON EXTRACTOR
+ * 🔥 STRONG JSON EXTRACTOR (FIXED)
  */
 const extractJson = (text) => {
   try {
@@ -17,17 +18,19 @@ const extractJson = (text) => {
 
     const parsed = JSON.parse(match[0]);
 
-    if (!parsed.message || !parsed.code) return null;
+    // ✅ only check code (message optional)
+    if (!parsed.code) return null;
 
     return parsed;
+
   } catch (err) {
-    console.log("JSON Parse Error:", err.message);
+    console.log("❌ JSON Parse Error:", err.message);
     return null;
   }
 };
 
 /**
- * MASTER PROMPT (UPGRADED + CREDIT SYSTEM)
+ * MASTER PROMPT
  */
 const masterPrompt = `
 YOU ARE A PRINCIPAL FRONTEND ARCHITECT AND SENIOR UI/UX ENGINEER.
@@ -39,52 +42,34 @@ USER REQUEST:
 {USER_PROMPT}
 -----------------------------------------
 
-CREDIT SYSTEM RULES:
-- Each request costs 1 credit
-- If user has insufficient credits, return:
-{"message":"Insufficient credits","code":""}
-
-- Always assume user has limited credits and optimize output
-
------------------------------------------
-OUTPUT RULES:
-Return ONLY valid JSON:
+RETURN ONLY JSON:
 {
   "message": "short professional sentence",
   "code": "<full html document>"
 }
 
-NO markdown, NO explanation, NO extra text.
+NO markdown, NO explanation.
 
------------------------------------------
-FEATURE REQUIREMENTS:
-- Fully responsive design
-- SPA navigation (Home, About, Services, Contact)
-- Smooth scrolling
-- Sticky navbar
-- Mobile hamburger menu
-- Form validation (JS)
-- Active nav highlight
-- Animations (scroll reveal)
-- No horizontal scroll
-- Professional UI/UX
+FEATURES:
+- Responsive
+- SPA
+- Navbar
+- Animations
+- Clean UI
 `;
 
 /**
- * FAKE CREDIT SYSTEM (replace with DB later)
+ * CREDIT SYSTEM
  */
-const getUserCredits = (user) => {
-  // TODO: replace with DB field (user.credits)
-  return user?.credits ?? 10;
-};
+const getUserCredits = (user) => user?.credits ?? 10;
 
-const deductCredits = (user) => {
-  // TODO: update DB here
+const deductCredits = async (user) => {
   user.credits = (user.credits || 10) - 1;
+  await user.save(); // 🔥 IMPORTANT (missing before)
 };
 
 /**
- * MAIN CONTROLLER
+ * 🔥 GENERATE WEBSITE (FIXED)
  */
 export const genrateWebsite = async (req, res) => {
   try {
@@ -92,81 +77,173 @@ export const genrateWebsite = async (req, res) => {
     const user = req.user;
 
     if (!prompt) {
-      return res.status(400).json({
-        success: false,
-        message: "prompt is required",
-      });
+      return res.status(400).json({ message: "prompt is required" });
     }
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "user not found",
-      });
+      return res.status(401).json({ message: "user not found" });
     }
 
-    // CREDIT CHECK
-    const credits = getUserCredits(user);
-
-    if (credits <= 0) {
-      return res.status(403).json({
-        success: false,
-        message: "Insufficient credits",
-      });
+    if (getUserCredits(user) <= 0) {
+      return res.status(403).json({ message: "Insufficient credits" });
     }
 
-    // REPLACE USER PROMPT IN MASTER PROMPT
     const finalPrompt = masterPrompt.replace("{USER_PROMPT}", prompt);
 
-    // CALL AI
     const raw = await generateResponse(finalPrompt);
 
-    console.log("RAW AI RESPONSE:\n", raw);
+    console.log("🧠 AI RAW:", raw?.slice(0, 200));
 
-    // PARSE RESPONSE
     const parsed = extractJson(raw);
 
     if (!parsed) {
       return res.status(500).json({
-        success: false,
         message: "AI returned invalid JSON",
-        debug: raw?.slice(0, 300),
+        debug: raw,
       });
     }
 
-    // DEDUCT CREDIT AFTER SUCCESS
-    deductCredits(user);
+    // ✅ SAVE WEBSITE
+    const website = await Website.create({
+      user: user._id,
+      code: parsed.code,
+      prompt,
+    });
 
-    // SUCCESS RESPONSE
+    await deductCredits(user);
+
     return res.status(200).json({
       success: true,
       creditsLeft: user.credits,
-      data: parsed,
+      data: website,
     });
 
   } catch (error) {
-    console.log("Website Controller Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.log("❌ GENERATE ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
-export const getWebsiteById=async (req,res)=>{
-try {
-   const website=await Website.findOne({
-     _id:req.params.id,
-     user:req.user._id
-   })
-   if(!website){
-    return res.status(400).json({message:"website not found"})
-   }
-   return res.status(200).json(website)
-} catch (error) {
-  return res.status(500).json({message:`get website  by id error ${error}`})
-}
+/**
+ * 🔥 GET WEBSITE BY ID
+ */
+export const getWebsiteById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-}
+    const website = await Website.findOne({
+      _id: id,
+      user: req.user._id,
+    });
 
+    if (!website) {
+      return res.status(404).json({ message: "website not found" });
+    }
+
+    return res.status(200).json(website);
+
+  } catch (error) {
+    console.log("❌ GET BY ID ERROR:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * 🔥 EDIT WEBSITE (IMPROVED)
+ */
+export const changes = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!prompt) {
+      return res.status(400).json({ message: "prompt is required" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ message: "website id required" });
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: "user not found" });
+    }
+
+    const website = await Website.findOne({
+      _id: id,
+      user: user._id,
+    });
+
+    if (!website) {
+      return res.status(404).json({ message: "website not found" });
+    }
+
+    if (getUserCredits(user) <= 0) {
+      return res.status(403).json({ message: "Insufficient credits" });
+    }
+
+    const editPrompt = `
+YOU ARE A SENIOR FRONTEND ENGINEER.
+
+UPDATE EXISTING WEBSITE.
+
+CURRENT CODE:
+${website.code}
+
+USER REQUEST:
+${prompt}
+
+RETURN JSON:
+{
+  "message":"updated",
+  "code":"<full html>"
+}
+`;
+
+    const raw = await generateResponse(editPrompt);
+
+    console.log("✏️ EDIT AI RAW:", raw?.slice(0, 200));
+
+    const parsed = extractJson(raw);
+
+    if (!parsed) {
+      return res.status(500).json({
+        message: "AI returned invalid JSON",
+        debug: raw,
+      });
+    }
+
+    website.code = parsed.code;
+    website.lastEditedPrompt = prompt;
+
+    await website.save();
+    await deductCredits(user);
+
+    return res.status(200).json({
+      success: true,
+      creditsLeft: user.credits,
+      data: website,
+    });
+
+  } catch (error) {
+    console.log("❌ EDIT ERROR:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * 🔥 GET ALL USER WEBSITES (NO CHANGE)
+ */
+export const getUserWebsites = async (req, res) => {
+  try {
+    const websites = await Website.find({
+      user: req.user._id,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json(websites);
+
+  } catch (error) {
+    console.log("❌ GET ALL ERROR:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};

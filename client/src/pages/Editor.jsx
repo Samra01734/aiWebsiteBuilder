@@ -16,7 +16,7 @@ const Editor = () => {
 
   const chatRef = useRef(null);
 
-  // ================= AUTO SCROLL CHAT =================
+  // ================= AUTO SCROLL =================
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -28,10 +28,18 @@ const Editor = () => {
     const handleGetWebsite = async () => {
       try {
         const result = await axios.get(
-          `${serverUrl}/api/website/get-by-id/${id}`,
+          `${serverUrl}/api/website/${id}`,
           { withCredentials: true }
         );
-        setWebsite(result.data);
+
+        const data = result.data;
+
+        // ensure conversation exists
+        setWebsite({
+          ...data,
+          conversation: data.conversation || [],
+        });
+
       } catch (error) {
         setError(error?.response?.data?.message || "Something went wrong");
       }
@@ -49,7 +57,7 @@ const Editor = () => {
       message: input,
     };
 
-    // 🔥 Optimistic UI update
+    // 🔥 Optimistic UI
     setWebsite((prev) => ({
       ...prev,
       conversation: [...(prev?.conversation || []), userMessage],
@@ -60,15 +68,25 @@ const Editor = () => {
     setThinking(true);
 
     try {
-      const res = await axios.post(
-        `${serverUrl}/api/website/chat/${id}`,
-        { message: input },
+      const res = await axios.put(
+        `${serverUrl}/api/website/${id}`,
+        { prompt: input },
         { withCredentials: true }
       );
 
-      setWebsite(res.data);
+      const updatedWebsite = res.data.data;
+
+      setWebsite((prev) => ({
+        ...updatedWebsite,
+        conversation: [
+          ...(prev?.conversation || []),
+          userMessage,
+          { role: "ai", message: "Website updated successfully 🚀" },
+        ],
+      }));
+
     } catch (err) {
-      setError(err?.response?.data?.message || "Chat failed");
+      setError(err?.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
       setThinking(false);
@@ -78,19 +96,19 @@ const Editor = () => {
   // ================= DEPLOY =================
   const handleDeploy = async () => {
     try {
-      const res = await axios.post(
+      await axios.post(
         `${serverUrl}/api/website/deploy/${id}`,
         {},
         { withCredentials: true }
       );
 
       alert("🚀 Deployed Successfully");
-      console.log(res.data);
     } catch (err) {
       setError("Deployment failed");
     }
   };
 
+  // ================= ERROR =================
   if (error) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-red-400">
@@ -99,6 +117,7 @@ const Editor = () => {
     );
   }
 
+  // ================= LOADING =================
   if (!website) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-white">
@@ -167,7 +186,7 @@ const Editor = () => {
             );
           })}
 
-          {/* AI THINKING INDICATOR */}
+          {/* AI THINKING */}
           {thinking && (
             <div className="flex items-center gap-2 text-purple-400 text-sm">
               <Loader2 className="animate-spin" size={14} />
@@ -181,7 +200,7 @@ const Editor = () => {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your website..."
+            placeholder="Describe changes..."
             className="flex-1 bg-black border border-white/10 rounded-lg px-3 py-2 text-sm outline-none"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
@@ -214,17 +233,11 @@ const Editor = () => {
         {/* PREVIEW */}
         <div className="flex-1 bg-white relative">
 
-          {!website?.previewUrl ? (
-            <div className="h-full flex items-center justify-center text-zinc-500 bg-black">
-              No preview yet
-            </div>
-          ) : (
-            <iframe
-              src={website.previewUrl}
-              title="preview"
-              className="w-full h-full border-none"
-            />
-          )}
+          <iframe
+            srcDoc={website.code || "<h1>No Code</h1>"}
+            title="preview"
+            className="w-full h-full border-none"
+          />
 
           {/* LOADING OVERLAY */}
           {loading && (

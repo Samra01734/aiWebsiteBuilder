@@ -10,16 +10,30 @@ const useGetCurrentUser = () => {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
+        // 🔥 GET TOKEN FROM LOCAL STORAGE
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.log("No token found");
+          return;
+        }
+
         const result = await axios.get(
           `${serverUrl}/api/user/me`,
-          { withCredentials: true }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // 🔥 IMPORTANT FIX
+            },
+          }
         );
 
-        // ✅ FIX: only user object store karo
-        dispatch(setUserData(result.data.user));
+        // ✅ SAFE CHECK
+        if (result.data) {
+          dispatch(setUserData(result.data.user || result.data));
+        }
 
       } catch (error) {
-        console.log(error);
+        console.log("GET USER ERROR:", error?.response?.data || error.message);
       }
     };
 
@@ -27,4 +41,4 @@ const useGetCurrentUser = () => {
   }, [dispatch]);
 };
 
-export default useGetCurrentUser;
+ export default useGetCurrentUser;

@@ -1,15 +1,15 @@
 import express from "express";
 import isAuth from "../middleware/isAuth.js";
+import {
+  genrateWebsite,
+  getWebsiteById,
+  getUserWebsites,
+} from "../controllers/website.controllers.js";
 
-// ⚠️ IMPORTANT: name same hona chahiye controller jaisa
-import { genrateWebsite, getWebsiteById } from "../controllers/website.controllers.js";
+const router = express.Router();
 
-const websiteRouter = express.Router();
+router.post("/generate", isAuth, genrateWebsite);
+router.get("/", isAuth, getUserWebsites);
+router.get("/:id", isAuth, getWebsiteById);
 
-// ✅ correct router variable + correct function name
-websiteRouter.post("/generate", isAuth, genrateWebsite);
-websiteRouter.get("/get-by-id/:id", isAuth, getWebsiteById);
-
-
-export default websiteRouter;
-
+export default router;
